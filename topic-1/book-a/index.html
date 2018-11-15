@@ -82,8 +82,8 @@ h3 {
   </header>
   <div class="right tab-menu menu">
     
-      <a class="item" data-tab="hough-transforms">
-        hough-transforms
+      <a class="item" data-tab="lab-hough-transforms">
+        lab-hough-transforms
       </a>
     
       <a class="item" data-tab="circular-detection">
@@ -99,7 +99,7 @@ h3 {
     
       
         <a class="item"
-           href="http://wit-computing.github.io/adas-2018//topic-1/book-a/index.html">hough-transforms </a>
+           href="http://wit-computing.github.io/adas-2018//topic-1/book-a/index.html">lab-hough-transforms </a>
       
     
   </div>
@@ -107,7 +107,7 @@ h3 {
     <div class="ui basic segment">
       <br>
       
-        <div class="ui tab segment lab" data-tab="hough-transforms">
+        <div class="ui tab segment lab" data-tab="lab-hough-transforms">
           <h1>Hough Transforms</h1>
 <p>Use Hough transform for feature extraction in images</p>
 <p>In this lab you will use Hough transform to detect lane markings and road signs in test images.</p>
@@ -116,7 +116,7 @@ h3 {
 <p>Extract the contents of the zip file to a suiable location</p>
 <h2>Initial code</h2>
 <p>Create a new file in matlab called &quot;lanes.m&quot; and add the following code:</p>
-<pre><code class="lang-matlab">I  = imread(&#39;um_000003.png&#39;);
+<pre><code>I  = imread(&#39;um_000003.png&#39;);
 
 % IG=rgb2gray(I)
 BW = edge(I,&#39;sobel&#39;);
@@ -159,7 +159,7 @@ end</code></pre>
 <li>Draw the calculated lined on to the original image.</li>
 </ul>
 <p>The output should look something like this:</p>
-<p><a href="./img/lane2.png">Lane Detection 2</a></p>
+<p><img src="./img/lane2.png" alt="Lane Detection 2"></p>
 <ul>
 <li>Optional: Colour the region/lane bounded by the lines</li>
 </ul>
@@ -172,7 +172,7 @@ end</code></pre>
 <ul>
 <li>Create a new matlab file called <code>circles.m</code> and enter the following code:</li>
 </ul>
-<pre><code class="lang-matlab">I = imread(&#39;coins.png&#39;);
+<pre><code>I = imread(&#39;coins.png&#39;);
 imshow(I)</code></pre>
 <ul>
 <li>Run the code and it will read an image of coins and display it.</li>
@@ -181,24 +181,20 @@ imshow(I)</code></pre>
 <ul>
 <li>Now the Hough transform magic!. Add the following lines of code to the end of the <code>circles.m</code> script:</li>
 </ul>
-<pre><code class="lang-matlab">[centers, radii, metric] = imfindcircles(A,[15 30]);
+<pre><code>[centers, radii, metric] = imfindcircles(A,[15 30]);
 viscircles(centers, radii,&#39;EdgeColor&#39;,&#39;b&#39;);</code></pre>
+<p>If you research the <code>imfindcircles()</code> function you&#39;ll see that it uses Hough transforms to detect circles. You also can specify various params such as radius range, <code>[15 30]</code>. See Matlab documentation for more info. </p>
 <ul>
 <li>Run the program again and you should see this:</li>
 </ul>
 <p><img src="./img/circles.png" alt="Coins with circles"></p>
 <ul>
-<li>Add the following code to just detect the strongest circles:</li>
+<li>As you can see, the <code>imfindcircles</code> function returns a list of centres and associated radii for detected circles. Add the following code to just detect the strongest circles:</li>
 </ul>
-<pre><code class="lang-matlab">centersStrong5 = centers(1:5,:); 
-radiiStrong5 = radii(1:5);
+<pre><code>centersStrong5 = centers(1:4,:); 
+radiiStrong5 = radii(1:4);
 
 viscircles(centersStrong5, radiiStrong5,&#39;EdgeColor&#39;,&#39;b&#39;);</code></pre>
-<h2>Bright and Dark Circles</h2>
-<ul>
-<li>Change the program to read in <code>circlesBrightDark.png</code> and run the program.</li>
-</ul>
-<p><img src="./img/bright.png" alt="Bright and Dark"></p>
 <h2>Speed Signs</h2>
 <p>Irish speed limit signage is circular. Therefore, you should be able to detect signs by applying the above procedure. </p>
 <ul>
@@ -206,20 +202,21 @@ viscircles(centersStrong5, radiiStrong5,&#39;EdgeColor&#39;,&#39;b&#39;);</code>
 </ul>
 <p><img src="./img/sign.jpg" alt="Speed Limit Sign"></p>
 <ul>
-<li>Adapt the code to get the following result:</li>
+<li>Adapt the circle detecting code to get the following result. You will need to adjust some of the parameters.</li>
 </ul>
 <p><img src="./img/sign2.png" alt="Speed Limit Sign"></p>
 <h2>Read the sign</h2>
-<p>Lets assume an ADAS system needs the ability to identify and read speed signage. Try the following to read the sign and report the speed limit to the user. </p>
+<p>Lets assume an ADAS system needs the ability to identify also and read speed signage. Try the following to read the sign and report the speed limit to the user. </p>
 <ul>
-<li><p>As before, crop the image to the square that contains the sign. <strong>Hint</strong>: use the radius and the centre of the detected sign to construct a region of interest</p>
+<li><p>After you detect the sign, crop the image to a region of interest (roi) that contains just the sign. <strong>Hint</strong>: use the radius and the centre of the detected sign to construct a region of interest</p>
 </li>
 <li><p>Investigate Matlabs OCR capability and apply it to this scenario as follows:</p>
 <ul>
-<li>Invert the image so that the text/numbers are &quot;white&quot;</li>
-<li>Apply the &quot;ROI-based Processing&quot; described in the Matlab OCR resources to try to extract the result</li>
-<li>Limit the character set to &#39;0123456789&#39;</li>
-<li>Annotate the image with the result</li>
+<li>Invert the cropped image so that the text/numbers are &quot;white&quot;:
+<img src="./img/bw.png" alt="Black and White (inverted) sign)"></li>
+<li>Apply the &quot;ROI-based Processing&quot; and blob detection method described in the Matlab OCR resources to try to extract the result.</li>
+<li>Since we&#39;re looking for integer numbers, it&#39;s a good idea to Limit the character set to &#39;0123456789&#39;</li>
+<li>Annotate the image with the OCR results to get output similar to the following:</li>
 </ul>
 <p><img src="./img/ocr.png" alt="OCR"></p>
 </li>
