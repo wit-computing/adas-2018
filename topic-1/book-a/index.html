@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.css"
+        type="text/css">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/railscasts.min.css"
+        rel="stylesheet"/>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script type="text/javascript"
+          src="https://cdnjs.cloudflare.com/ajax/libs/jquery.address/1.6/jquery.address.min.js"></script>
+  <script type="text/javascript"
+          src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.js"></script>
+  <script type="text/javascript"
+          src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script type="text/javascript"
+          src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/java.min.js"></script>
+  <script type="text/javascript"
+          src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/kotlin.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <style>
+    
+
+body {
+  font-family: "Open Sans", "Helvetica", "Helvetica Neue",  "Arial", sans-serif;
+  font-size:90%;
+  color: black;
+}
+
+p {
+  margin: 0.5em;
+}
+
+pre code {
+  font-family: "Monaco";
+  font-size: 100%;
+}
+
+img {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  margin:10px;
+}
+
+h1, h2, h3 {
+  border-bottom:thin solid black;
+  margin-bottom: 0.5em;
+  margin-top: 1em;
+}
+
+h1 {
+  font-style:italic;
+  font-size:130%;
+}
+
+h2 {
+  font-size:110%;
+}
+
+h3 {
+  font-size:100%;
+}
+
+
+
+  </style>
+</head>
+
+<body>
+
+
+
+<div class="ui fixed top pointing inverted stackable menu labmenu">
+  <header class="header item">
+    <i id="toc" class="sitemap icon"></i>
+    
+      <a href="../index.html"> Image Processing 1  </a>
+    
+  </header>
+  <div class="right tab-menu menu">
+    
+      <a class="item" data-tab="hough-transforms">
+        hough-transforms
+      </a>
+    
+      <a class="item" data-tab="circular-detection">
+        circular-detection
+      </a>
+    
+  </div>
+</div>
+
+<div class="ui pushable">
+  <div class="ui inverted labeled icon left inline vertical sidebar menu">
+    <br><br>
+    
+      
+        <a class="item"
+           href="http://wit-computing.github.io/adas-2018//topic-1/book-a/index.html">hough-transforms </a>
+      
+    
+  </div>
+  <div class="pusher" tabindex="-1">
+    <div class="ui basic segment">
+      <br>
+      
+        <div class="ui tab segment lab" data-tab="hough-transforms">
+          <h1>Hough Transforms</h1>
+<p>Use Hough transform for feature extraction in images</p>
+<p>In this lab you will use Hough transform to detect lane markings and road signs in test images.</p>
+<h2>Download test data</h2>
+<p>Download a set of test images for your code from <a href="http://www.cvlibs.net/download.php?file=data_road_gray.zip">here</a></p>
+<p>Extract the contents of the zip file to a suiable location</p>
+<h2>Initial code</h2>
+<p>Create a new file in matlab called &quot;lanes.m&quot; and add the following code:</p>
+<pre><code class="lang-matlab">I  = imread(&#39;um_000003.png&#39;);
+
+% IG=rgb2gray(I)
+BW = edge(I,&#39;sobel&#39;);
+
+[H,T,R] = hough(BW);
+
+P  = houghpeaks(H,5,&#39;threshold&#39;,ceil(0.3*max(H(:))),&#39;NHoodSize&#39;,[95 95]);
+
+lines = houghlines(BW,T,R,P,&#39;FillGap&#39;,40,&#39;MinLength&#39;,30);
+figure, imshow(I), hold on
+[rows columns]=size(I)
+max_len = 0;
+for k = 1:length(lines)
+   xy = [lines(k).point1; lines(k).point2]
+   % Get the equation of the line
+   x1 = xy(1,1);
+   y1 = xy(1,2);
+   x2 = xy(2,1);
+   y2 = xy(2,2);
+   slope = (y2-y1)/(x2-x1);
+   xLeft = 1;
+   yLeft = slope * (xLeft - x1) + y1;
+   xRight = columns;
+   yRight = slope * (xRight - x1) + y1;
+   plot([xLeft, xRight], [yLeft, yRight], &#39;LineWidth&#39;,2,&#39;Color&#39;,&#39;green&#39;);   
+end</code></pre>
+<p>Add the image files to the Matlab path and run the program. You should see output similar to the following:</p>
+<p><img src="./img/lane1.png" alt="Line Detection 1"></p>
+<p>There are some issues with this program</p>
+<ol>
+<li>There are lines detected in regions we are not interested in.</li>
+<li>Lines that are horizontal (or near horizontal) can be ignored.</li>
+<li>We are only interested in the &quot;road&quot; part of the image (i.e. the lower half)</li>
+</ol>
+<h2>Exercise:</h2>
+<p>Modify the program to as follows:</p>
+<ul>
+<li>Update the program to only apply the Hough Transform the bottom half and middle third of the image. <strong>Hint:</strong> Use the <code>imcrop</code> function specifying the crop rectangle.</li>
+<li>Change the Hough transform to only consider lines in the near-vertical orientation. <strong>Hint:</strong> Specify a suitable <code>theta</code> range in the Hough transform function call.</li>
+<li>Draw the calculated lined on to the original image.</li>
+</ul>
+<p>The output should look something like this:</p>
+<p><a href="./img/lane2.png">Lane Detection 2</a></p>
+<ul>
+<li>Optional: Colour the region/lane bounded by the lines</li>
+</ul>
+
+        </div>
+      
+        <div class="ui tab segment lab" data-tab="circular-detection">
+          <h2>Road Sign Detection using Hough Transforms</h2>
+<p>You will now use the Matlab circular Hough transform to detect circular (speed) signs. First, lets try the simple built-in example for circular detection.</p>
+<ul>
+<li>Create a new matlab file called <code>circles.m</code> and enter the following code:</li>
+</ul>
+<pre><code class="lang-matlab">I = imread(&#39;coins.png&#39;);
+imshow(I)</code></pre>
+<ul>
+<li>Run the code and it will read an image of coins and display it.</li>
+</ul>
+<p><img src="./img/coins.png" alt="Coins"></p>
+<ul>
+<li>Now the Hough transform magic!. Add the following lines of code to the end of the <code>circles.m</code> script:</li>
+</ul>
+<pre><code class="lang-matlab">[centers, radii, metric] = imfindcircles(A,[15 30]);
+viscircles(centers, radii,&#39;EdgeColor&#39;,&#39;b&#39;);</code></pre>
+<ul>
+<li>Run the program again and you should see this:</li>
+</ul>
+<p><img src="./img/circles.png" alt="Coins with circles"></p>
+<ul>
+<li>Add the following code to just detect the strongest circles:</li>
+</ul>
+<pre><code class="lang-matlab">centersStrong5 = centers(1:5,:); 
+radiiStrong5 = radii(1:5);
+
+viscircles(centersStrong5, radiiStrong5,&#39;EdgeColor&#39;,&#39;b&#39;);</code></pre>
+<h2>Bright and Dark Circles</h2>
+<ul>
+<li>Change the program to read in <code>circlesBrightDark.png</code> and run the program.</li>
+</ul>
+<p><img src="./img/bright.png" alt="Bright and Dark"></p>
+<h2>Speed Signs</h2>
+<p>Irish speed limit signage is circular. Therefore, you should be able to detect signs by applying the above procedure. </p>
+<ul>
+<li><strong>Exercise:</strong> Using the above code, detect the road sign in the following image:</li>
+</ul>
+<p><img src="./img/sign.jpg" alt="Speed Limit Sign"></p>
+<ul>
+<li>Adapt the code to get the following result:</li>
+</ul>
+<p><img src="./img/sign2.png" alt="Speed Limit Sign"></p>
+<h2>Read the sign</h2>
+<p>Lets assume an ADAS system needs the ability to identify and read speed signage. Try the following to read the sign and report the speed limit to the user. </p>
+<ul>
+<li><p>As before, crop the image to the square that contains the sign. <strong>Hint</strong>: use the radius and the centre of the detected sign to construct a region of interest</p>
+</li>
+<li><p>Investigate Matlabs OCR capability and apply it to this scenario as follows:</p>
+<ul>
+<li>Invert the image so that the text/numbers are &quot;white&quot;</li>
+<li>Apply the &quot;ROI-based Processing&quot; described in the Matlab OCR resources to try to extract the result</li>
+<li>Limit the character set to &#39;0123456789&#39;</li>
+<li>Annotate the image with the result</li>
+</ul>
+<p><img src="./img/ocr.png" alt="OCR"></p>
+</li>
+</ul>
+
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).on('keydown', function(e) {
+  e = e || window.event;
+  var nextTab;
+  switch (e.which || e.keyCode) {
+    case 37: // left
+      nextTab = $('.tab-menu a[data-tab].active').prev('a[data-tab]');
+      if (!nextTab.length) nextTab = $('.tab-menu a[data-tab]').last();
+      nextTab.click();
+      $('.pusher').focus();
+      break;
+
+    case 39: // right
+      nextTab = $('.tab-menu a[data-tab].active').next('a[data-tab]');
+      if (!nextTab.length) nextTab = $('.tab-menu a[data-tab]').first();
+      nextTab.click();
+      $('.pusher').focus();
+      break;
+  }
+});
+
+  $(document).ready(function() {
+  $('img').addClass('ui image');
+
+  $('.ui.embed').embed();
+
+  const $images = $('.lab img');
+  jQuery.each($images, function(i) {
+    if ($images[i].alt.length > 0) {
+      const divImg = $(document.createElement('div')).addClass(
+        'ui basic segment',
+      );
+      $($images[i]).wrap(divImg);
+      const divLabel = $(document.createElement('div')).addClass(
+        'ui blue ribbon label',
+      );
+      divLabel.append($images[i].alt);
+      $(divLabel).insertBefore($images[i]);
+    }
+  });
+
+  $('.ui.menu .item').tab({
+    history: true,
+    historyType: 'hash',
+  });
+
+  $('.popup').popup();
+
+  $('.ui.sidebar')
+    .sidebar({ context: $('.pushable') })
+    .sidebar('setting', 'transition', 'slide out')
+    .sidebar('attach events', '#toc');
+});
+
+</script>
+</body>
+</html>
