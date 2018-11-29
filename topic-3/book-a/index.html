@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.css"
+          type="text/css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/railscasts.min.css"
+          rel="stylesheet"/>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery.address/1.6/jquery.address.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/java.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/kotlin.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <style>
+      
+
+body {
+  font-family: "Open Sans", "Helvetica", "Helvetica Neue",  "Arial", sans-serif;
+  font-size:90%;
+  color: black;
+}
+
+p {
+  margin: 0.5em;
+}
+
+pre code {
+  font-family: "Monaco";
+  font-size: 100%;
+}
+
+img {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  margin:10px;
+}
+
+h1, h2, h3 {
+  border-bottom:thin solid black;
+  margin-bottom: 0.5em;
+  margin-top: 1em;
+}
+
+h1 {
+  font-style:italic;
+  font-size:130%;
+}
+
+h2 {
+  font-size:110%;
+}
+
+h3 {
+  font-size:100%;
+}
+
+
+
+      
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+.wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.footer {
+  background: white;
+  text-align: right;
+}
+.content {
+  flex: 1;
+  overflow: auto;
+}
+
+
+
+    </style>
+  </head>
+
+  
+  
+
+  <div class="ui fixed top pointing inverted stackable menu labmenu">
+    <header class="header item">
+      <i id="toc" class="sitemap icon"></i>
+      
+        <a href="../index.html"> Image Processing 3  </a>
+      
+    </header>
+    <div class="right tab-menu menu">
+      
+        <a class="item" data-tab="Face-Detection-lab">
+          Face-Detection-lab
+        </a>
+      
+        <a class="item" data-tab="RPi">
+          RPi
+        </a>
+      
+    </div>
+  </div>
+
+
+  
+
+  <div class="ui pushable">
+    <div class="ui inverted labeled icon left inline vertical sidebar menu">
+      <br><br>
+      
+        
+          <a class="item"
+             href="http://wit-computing.github.io/adas-2018//topic-1/book-a/index.html">lab-hough-transforms </a>
+        
+      
+        
+          <a class="item"
+             href="http://wit-computing.github.io/adas-2018//topic-2/book-a/index.html">Kalman </a>
+        
+      
+        
+          <a class="item"
+             href="http://wit-computing.github.io/adas-2018//topic-3/book-a/index.html">Face-Detection-lab </a>
+        
+      
+    </div>
+    <div class="pusher" tabindex="-1">
+      <div class="ui basic segment">
+        <br>
+        
+          <div class="ui tab segment lab" data-tab="Face-Detection-lab">
+            <h1>Face Detection</h1>
+<p>Face Detection  Tracking  Raspberry Pi</p>
+<p> In this exercise you will develop a simple face detection and tracking application using the live video stream captured by your built-in webcam. 
+ then, you will try to extend this to the Reapberry Pi and camera</p>
+<h2>Equipment</h2>
+<ul>
+<li>Laptop</li>
+<li>Raspberry Pi 3 B/B+</li>
+<li>Raspberry Pi Camera</li>
+</ul>
+<h2>1. Install Web Cam Support</h2>
+<p>MATLAB provides webcam support through a Hardware Support Package.  Download and install the support package via the  <code>Add-Ons</code>.</p>
+<p><img src="./img/1.png" alt="Understanding Kalman Filters"></p>
+<p>Select <code>Get add-ons</code> and Locate the <code>USB WebCam</code> add-on. </p>
+<h2>2. WebCam integration</h2>
+<p>Create objects for detecting faces, tracking points, acquiring and displaying video frames.</p>
+<pre><code class="lang-matlab">% Create the face detector object.
+faceDetector = vision.CascadeObjectDetector();
+% Clear any active camera connections 
+clear cam;
+
+% Create the webcam object.
+cam = webcam();
+
+% Capture one frame to get its size.
+videoFrame = snapshot(cam);
+frameSize = size(videoFrame);
+
+% Create the video player object. 
+videoPlayer = vision.VideoPlayer(&#39;Position&#39;, [100 100 [frameSize(2), frameSize(1)]+30]);
+run=true;
+while run
+    % Get the next frame.
+    videoFrame = snapshot(cam);
+    % Display the annotated video frame using the video player object.
+    step(videoPlayer, videoFrame);
+
+     % Check whether the video player window has been closed.
+    run = isOpen(videoPlayer);
+end
+
+% Clean up.
+clear cam;
+release(videoPlayer);</code></pre>
+<ul>
+<li>Run this code. Matlab should now display the webcam video on your desktop.</li>
+</ul>
+<h2>Detect Face</h2>
+<p>You will now process the video frames to detect faces and insert a bounding box. Matlab uses the Viola Jones algorythm via <code>vision.CascadeObjectDetector</code> object to detect a face in the current frame.</p>
+<ul>
+<li>In the <code>while</code> loop, insert the following code just below <code>videoFrame</code> variable assignment:</li>
+</ul>
+<pre><code class="lang-matlab">   % get grey scale image of frame
+   videoFrameGray = rgb2gray(videoFrame);
+
+     % Detect bounding boxs for face from grey image.
+     bbox = faceDetector.step(videoFrameGray);
+
+     % if we detect faces, insert a rectange into frame
+     if ~isempty(bbox)
+     % insert bounding box around the detected face.
+            videoFrame = insertShape(videoFrame, &#39;Rectangle&#39;, bbox, &#39;LineWidth&#39;, 3);
+     end</code></pre>
+<ul>
+<li>Now run the code again. The program should now detect any faces in the image and surround with a bounding box.</li>
+</ul>
+<h2>Point Tracking</h2>
+<p>In this section you will update the code to detect and track features in the detected faces, using the <code>vision.pointTracker</code>. You can use this to track the face and not have to perform full face detection on every frame. As you track the points, some of them will be lost because of occlusion/noise. If the number of points being tracked falls below a threshold (in this case 10), that means that the face is no longer being tracked. The code will then switch back to the detection to try to re-acquire the face.</p>
+<ul>
+<li>Initialise the <code>pointTracker</code> object <code>numPoints</code> variable by adding the following code at just under the <code>faceDetector</code> object declaration:</li>
+</ul>
+<pre><code class="lang-matlab">% Create the point tracker object.
+pointTracker = vision.PointTracker(&#39;MaxBidirectionalError&#39;, 2);
+numPts=0;</code></pre>
+<ul>
+<li>Replace the **entire <code>if ~isempty(bbox)</code> condition with the following code:</li>
+</ul>
+<pre><code class="lang-matlab"> if numPts &lt; 10   
+     % Detect bounding boxs for face from grey image.
+     bbox = faceDetector.step(videoFrameGray);
+
+     if ~isempty(bbox)
+                 % Find corner points inside the detected region.
+            points = detectMinEigenFeatures(videoFrameGray, &#39;ROI&#39;, bbox(1, :));
+
+            % Re-initialize the point tracker.
+            xyPoints = points.Location;
+            numPts = size(xyPoints,1);
+            release(pointTracker);
+            initialize(pointTracker, xyPoints, videoFrameGray);
+
+            % Save a copy of the points.
+            oldPoints = xyPoints;
+
+            % Convert the rectangle represented as [x, y, w, h] into an
+            % M-by-2 matrix of [x,y] coordinates of the four corners. This
+            % is needed to be able to transform the bounding box to display
+            % the orientation of the face.
+            bboxPoints = bbox2points(bbox(1, :));  
+
+            % Convert the box corners into the [x1 y1 x2 y2 x3 y3 x4 y4] 
+            % format required by insertShape.
+            bboxPolygon = reshape(bboxPoints&#39;, 1, []);
+
+            % Display a bounding box around the detected face.
+            videoFrame = insertShape(videoFrame, &#39;Polygon&#39;, bboxPolygon, &#39;LineWidth&#39;, 3);
+
+            % Display detected corners.
+            videoFrame = insertMarker(videoFrame, xyPoints, &#39;+&#39;, &#39;Color&#39;, &#39;white&#39;);
+     end
+
+  else
+      % Tracking mode.
+        [xyPoints, isFound] = step(pointTracker, videoFrameGray);
+        visiblePoints = xyPoints(isFound, :);
+        oldInliers = oldPoints(isFound, :);
+
+        numPts = size(visiblePoints, 1);       
+
+        if numPts &gt;= 10
+            % Estimate the geometric transformation between the old points
+            % and the new points.
+            [xform, oldInliers, visiblePoints] = estimateGeometricTransform(...
+                oldInliers, visiblePoints, &#39;similarity&#39;, &#39;MaxDistance&#39;, 4);            
+
+            % Apply the transformation to the bounding box.
+            bboxPoints = transformPointsForward(xform, bboxPoints);
+
+            % Convert the box corners into the [x1 y1 x2 y2 x3 y3 x4 y4] 
+            % format required by insertShape.
+            bboxPolygon = reshape(bboxPoints&#39;, 1, []);            
+
+            % Display a bounding box around the face being tracked.
+            videoFrame = insertShape(videoFrame, &#39;Polygon&#39;, bboxPolygon, &#39;LineWidth&#39;, 3);
+
+            % Display tracked points.
+            videoFrame = insertMarker(videoFrame, visiblePoints, &#39;+&#39;, &#39;Color&#39;, &#39;white&#39;);
+
+            % Reset the points.
+            oldPoints = visiblePoints;
+            setPoints(pointTracker, oldPoints);
+        end
+  end</code></pre>
+
+          </div>
+        
+          <div class="ui tab segment lab" data-tab="RPi">
+            <h1>Integrate Raspberry Pi Camera</h1>
+<ul>
+<li>Connect Raspberry Pi Camera to the RPi using the following diagram as a guide:</li>
+</ul>
+<p><img src="./img/2.png" alt="RPi Camera"></p>
+<ul>
+<li>Open Matlab and Click on Get Hardware Support Packages.</li>
+</ul>
+<p><img src="./img/3.png" alt="Hardware Support Packages"></p>
+<ul>
+<li><p>Find the &quot;Raspberry Pi&quot; Package and download/install.</p>
+</li>
+<li><p>Create a new Mallab scroipt called <code>piCam.m</code> and  enter the following code:</p>
+</li>
+</ul>
+<pre><code class="lang-matlab">%% integrate the Rpi
+rpi=raspi();
+rcam=cameraboard(rpi,`Resolution`,`640x480`);
+
+%% display one frame
+
+snap = snapshot(rcam)
+imshow(snap)
+hold on</code></pre>
+<ul>
+<li><p>Run the code and- you should see the image from the pi camera appear. </p>
+</li>
+<li><p>Modify the code to do face detection. Refer to the previous code for guidance. You should use the cascade object detector to locate the bounding box of any detected face...</p>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+
+
+  <script>
+    $(document).on('keydown', function(e) {
+  e = e || window.event;
+  var nextTab;
+  switch (e.which || e.keyCode) {
+    case 37: // left
+      nextTab = $('.tab-menu a[data-tab].active').prev('a[data-tab]');
+      if (!nextTab.length) nextTab = $('.tab-menu a[data-tab]').last();
+      nextTab.click();
+      $('.pusher').focus();
+      break;
+
+    case 39: // right
+      nextTab = $('.tab-menu a[data-tab].active').next('a[data-tab]');
+      if (!nextTab.length) nextTab = $('.tab-menu a[data-tab]').first();
+      nextTab.click();
+      $('.pusher').focus();
+      break;
+  }
+});
+
+    $(document).ready(function() {
+  $('img').addClass('ui image');
+
+  $('.ui.embed').embed();
+
+  const $images = $('.lab img');
+  jQuery.each($images, function(i) {
+    if ($images[i].alt.length > 0) {
+      const divImg = $(document.createElement('div')).addClass(
+        'ui basic segment',
+      );
+      $($images[i]).wrap(divImg);
+      const divLabel = $(document.createElement('div')).addClass(
+        'ui blue ribbon label',
+      );
+      divLabel.append($images[i].alt);
+      $(divLabel).insertBefore($images[i]);
+    }
+  });
+
+  $('.ui.menu .item').tab({
+    history: true,
+    historyType: 'hash',
+  });
+
+  $('.popup').popup();
+
+  $('.ui.sidebar')
+    .sidebar({ context: $('.pushable') })
+    .sidebar('setting', 'transition', 'slide out')
+    .sidebar('attach events', '#toc');
+});
+
+  </script>
+
+
+
+  <div class="ui bottom fixed borderless right menu">
+    <div class="ui right small menu">
+      <div class="ui tiny basic message segment">
+         Powered by <a href="https://github.com/edeleastar/tutors-ts">tutors-ts.</a> 
+      </div>
+    </div>
+  </div>
+
+  </body>
+
+</html>
